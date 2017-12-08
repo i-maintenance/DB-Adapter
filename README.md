@@ -1,18 +1,6 @@
 # DB-Adapter
 Adapter for the i-Maintenance lab's database backend
 
-## ELK Instance at the moment on il063 
+i-maintenance's datastore will be forked from  [nimble: data-analytics](https://github.com/nimble-platform/data-analytics) when needed. Currently, all functionality for i-maintenance messaging system such as dynamic ID-mapping is offered optionally under nimble.
 
-dir: Docker/elk-stack-master
-
-run:
-```sudo docker-compose up --build```
-
-Kibana hosted on:
-il063:5601
-
-
-status:
-PrinterData and SensorData are forwarded via tcp
-
-
+The db-adapter is running at il060
