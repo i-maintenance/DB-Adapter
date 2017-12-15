@@ -3,37 +3,30 @@ version: '3.3'
 services:
 # Kafka
   kafka:
-    build: 
-      context: kafka-logstash-adapter/
-      args:
-        - LIBRDKAFKA_VERSION=$LIBRDKAFKA_VERSION
-        - CONFLUENT_KAFKA_VERSION=$CONFLUENT_KAFKA_VERSION
+    image: 127.0.0.1:5001/db-adapter
+    build: kafka-logstash-adapter/
     ports:
       - "3030:3030"
-    env_file: 
-      - .env
-    networks:
-      - db-adapter
     depends_on:
       - redis
     entrypoint:
       - python
       - /home/src/db-adapter.py
-    restart: always
+    deploy:
+      placement:
+        constraints: [node.role == worker]
+      resources:
+        limits:
+          cpus: "1"
+          memory: 4G
+      replicas: 3
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+
 
 # Redis Webservice
   redis:
-    build: 
-      context: redis/
-    sysctls:
-      - net.core.somaxconn=65535
-    networks:
-      - db-adapter
-    restart: always
-
-# Network
-networks:
-  db-adapter:
-
-
-
+    image: redis:alpine
