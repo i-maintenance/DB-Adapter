@@ -1,14 +1,17 @@
 version: '3.3'
 
 services:
-# Kafka
   kafka:
     image: 127.0.0.1:5001/db-adapter
     build: kafka-logstash-adapter/
+    env_file:
+      - .env
     ports:
       - "3030:3030"
     depends_on:
       - redis
+    networks:
+      - elk_datastore
     deploy:
       placement:
         constraints: [node.role == worker]
@@ -24,6 +27,12 @@ services:
         condition: on-failure
 
 
-# Redis Webservice
   redis:
     image: redis:alpine
+    networks:
+      - elk_datastore
+
+# Network
+networks:
+  elk_datastore:
+    external: true
