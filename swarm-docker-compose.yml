@@ -1,0 +1,28 @@
+version: '3.3'
+
+services:
+# Kafka
+  kafka:
+    image: 127.0.0.1:3031/db-adapter
+    build: 
+      context: kafka-logstash-adapter/
+      args:
+        - LIBRDKAFKA_VERSION=$LIBRDKAFKA_VERSION
+        - CONFLUENT_KAFKA_VERSION=$CONFLUENT_KAFKA_VERSION
+    ports:
+      - "3030:3030"
+    env_file: 
+      - .env
+    depends_on:
+      - redis
+    entrypoint:
+      - python
+      - /home/src/db-adapter.py
+
+# Redis Webservice
+  redis:
+    image: redis:alpine
+
+
+
+
