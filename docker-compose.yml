@@ -23,7 +23,8 @@ services:
 
 # Redis Webservice
   redis:
-    build: redis/
+    build: 
+      context: redis/
     sysctls:
       - net.core.somaxconn=65535
     networks:
