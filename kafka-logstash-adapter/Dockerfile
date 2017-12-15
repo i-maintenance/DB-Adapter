@@ -23,6 +23,5 @@ RUN pip install -r /home/src/requirements.txt
 
 ADD src/db-adapter.py /home/src
 
-# call db-apdater in yml
-
+CMD ["python", "/home/src/db-adapter.py"]
 
