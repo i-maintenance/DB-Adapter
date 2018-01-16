@@ -215,8 +215,6 @@ class KafkaStAdapter:
                 logger.warning(adapter_status)
                 with open(STATUS_FILE, "w") as f:
                     f.write(json.dumps(adapter_status))
-            finally:
-                consumer.close()
 
 
 if __name__ == '__main__':
