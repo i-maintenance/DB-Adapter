@@ -7,11 +7,11 @@ services:
     env_file:
       - .env
     ports:
-      - "3030:3030"
+      - "3031:3030"
     depends_on:
       - redis
     networks:
-      - elk_datastore
+      - db-adapter
     deploy:
       placement:
         constraints: [node.role == worker]
@@ -30,9 +30,8 @@ services:
   redis:
     image: redis:alpine
     networks:
-      - elk_datastore
+      - db-adapter
 
 # Network
 networks:
-  elk_datastore:
-    external: true
+  db-adapter:
