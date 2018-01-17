@@ -12,8 +12,13 @@ from logstash import TCPLogstashHandler
 # confluent_kafka is based on librdkafka, details in requirements.txt
 from confluent_kafka import Consumer, KafkaError
 
+# Why using a kafka to logstash adapter, while there is a plugin?
+# Becauce there are measurements, as well as obersvations valid as SensorThings result.
+# Kafka Adapters seems to use only one topic
+# ID mapping is pretty much straightforward with a python scipt
 
-__date__ = "13 Dezember 2017"
+
+__date__ = "17 January 2018"
 __version__ = "1.7"
 __email__ = "christoph.schranz@salzburgresearch.at"
 __status__ = "Development"
@@ -195,7 +200,7 @@ class KafkaStAdapter:
                                 self.one_st_id_map(data_id)
                             data['Datastream']['name'] = self.id_mapping['value'][data_id]['name']
                             data['Datastream']['URI'] = ST_SERVER + "Datastreams(" + data_id + ")"
-                            #print(data['Datastream']['name'])
+                            print(data['Datastream']['name'])
 
                         logger.info('', extra=data)
 
