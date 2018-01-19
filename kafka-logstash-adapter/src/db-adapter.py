@@ -157,7 +157,7 @@ class KafkaStAdapter:
             "version": {
                 "number": __version__,
                 "build_date": __date__,
-                "repository": "https://github.com/nimble-platform/data-analytics"
+                "repository": "https://github.com/i-maintenance/DB-Adapter"
             }
         }
         with open(STATUS_FILE, "w") as f:
@@ -194,13 +194,13 @@ class KafkaStAdapter:
                     msg = consumer.poll()
                     if not msg.error():
                         data = json.loads(msg.value().decode('utf-8'))
+
                         if self.enable_sensorthings:
                             data_id = str(data['Datastream']['@iot.id'])
                             if data_id not in list(self.id_mapping['value'].keys()):
                                 self.one_st_id_map(data_id)
                             data['Datastream']['name'] = self.id_mapping['value'][data_id]['name']
                             data['Datastream']['URI'] = ST_SERVER + "Datastreams(" + data_id + ")"
-                            print(data['Datastream']['name'])
 
                         logger.info('', extra=data)
 
