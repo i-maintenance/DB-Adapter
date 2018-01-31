@@ -191,7 +191,7 @@ class KafkaStAdapter:
             ts_refreshed_mapping = time.time()
             try:
                 while running:
-                    msg = consumer.poll()
+                    msg = consumer.poll(0.1)
                     if not msg.error():
                         data = json.loads(msg.value().decode('utf-8'))
 
