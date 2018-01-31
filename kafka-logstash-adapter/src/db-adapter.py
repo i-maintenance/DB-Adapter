@@ -72,7 +72,7 @@ class KafkaStAdapter:
     def full_st_id_map(self):
         datastreams = requests.get(ST_SERVER + "Datastreams").json()
         id_mapping = dict()
-        id_mapping["@iot.nextLink"] = datastreams["@iot.nextLink"]
+#        id_mapping["@iot.nextLink"] = datastreams["@iot.nextLink"]
         id_mapping["value"] = dict()
         for stream in datastreams["value"]:
             stream_id = str(stream["@iot.id"])
@@ -89,7 +89,7 @@ class KafkaStAdapter:
     def empty_id_mapping(self):
         datastreams = requests.get(ST_SERVER + "Datastreams").json()
         id_mapping = dict()
-        id_mapping["@iot.nextLink"] = datastreams["@iot.nextLink"]
+#        id_mapping["@iot.nextLink"] = datastreams["@iot.nextLink"]
         id_mapping["value"] = dict()
         return id_mapping
 

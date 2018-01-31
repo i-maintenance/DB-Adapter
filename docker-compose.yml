@@ -31,6 +31,10 @@ services:
     image: redis:alpine
     networks:
       - db-adapter
+    stop_grace_period: 1m30s
+    deploy:
+      placement:
+        constraints: [node.role == manager]
 
 # Network
 networks:
