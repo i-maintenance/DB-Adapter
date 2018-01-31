@@ -192,6 +192,8 @@ class KafkaStAdapter:
             try:
                 while running:
                     msg = consumer.poll(0.1)
+                    if msg is None:
+                        continue
                     if not msg.error():
                         data = json.loads(msg.value().decode('utf-8'))
 
