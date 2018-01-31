@@ -218,7 +218,8 @@ class KafkaStAdapter:
 
             except Exception as error:
                 logger.error("Error in Kafka-Logstash Streaming: {}".format(error))
-                adapter_status["status"] = "error"
+                adapter_status["status"] = "Last error occured at {}: Error msg: {}"\
+                    .format(time.ctime(), str(error))
                 logger.warning(adapter_status)
                 with open(STATUS_FILE, "w") as f:
                     f.write(json.dumps(adapter_status))
