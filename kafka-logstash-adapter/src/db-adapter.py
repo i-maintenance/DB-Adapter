@@ -13,13 +13,13 @@ from logstash import TCPLogstashHandler
 from confluent_kafka import Consumer, KafkaError
 
 # Why using a kafka to logstash adapter, while there is a plugin?
-# Becauce there are measurements, as well as obersvations valid as SensorThings result.
+# Because there are measurements, as well as observations valid as SensorThings result.
 # Kafka Adapters seems to use only one topic
-# ID mapping is pretty much straightforward with a python scipt
+# ID mapping is pretty much straightforward with a python script
 
 
-__date__ = "31 January 2018"
-__version__ = "1.8"
+__date__ = "09 March 2018"
+__version__ = "1.9"
 __email__ = "christoph.schranz@salzburgresearch.at"
 __status__ = "Development"
 __desc__ = """This program forwards consumed messages from the kafka bus semantically interpreted by sensorthings 
@@ -28,12 +28,14 @@ to the logstash instance of the ELK stack."""
 
 # kafka parameters
 # topics and servers should be of the form: "topic1,topic2,..."
-KAFKA_TOPICS = "SensorData"
-BOOTSTRAP_SERVERS_default = 'il061,il062'
-KAFKA_GROUP_ID = "db-adapter"
+KAFKA_TOPICS = "SensorData"  # TODO can be set as env, Also works for the logstash pipeline index filter
+BOOTSTRAP_SERVERS_default = 'il061,il062,il063'
+# using this also als Host default "db-adapter"
+# KAFKA_GROUP_ID = "iot86"  # il060, if any lakes occur, temporarily use another group-id until all data is load.
+KAFKA_GROUP_ID = os.uname()[1]  # use the hostname as kafka_group_ID
 
 # logstash parameters
-HOST_default = 'il060'  # 'logstash'  # important to set
+HOST_default = KAFKA_GROUP_ID  # 'il060'  # 'logstash'  # use the local endpoint: equals hostname
 PORT_default = 5000
 STATUS_FILE = "status.log"
 
@@ -68,7 +70,6 @@ class KafkaStAdapter:
         if self.enable_sensorthings:
             self.id_mapping = self.full_st_id_map()
 
-
     def full_st_id_map(self):
         datastreams = requests.get(ST_SERVER + "Datastreams").json()
         id_mapping = dict()
@@ -94,32 +95,50 @@ class KafkaStAdapter:
         return id_mapping
 
     def stream_kafka(self):
-        """
+        """highest
         This function configures a kafka consumer and a logstash logger instance.
         :return
         """
+        # Init logstash logging
+        logging.basicConfig(level='WARNING')
+        loggername_logs = 'logging'
+        logger_logs = logging.getLogger(loggername_logs)
+        logger_logs.setLevel(logging.INFO)
+        #  use default and init Logstash Handler
+        logstash_handler = TCPLogstashHandler(host=HOST_default,
+                                              port=PORT_default,
+                                              version=1)
+        logger_logs.addHandler(logstash_handler)
+        logger_logs.info('Added Logstash Logger for Logs with loggername: {}'.format(loggername_logs))
 
         # Init kafka consumer
         kafka_topics_str = os.getenv('KAFKA_TOPICS', KAFKA_TOPICS)
         kafka_topics = [topic.strip() for topic in kafka_topics_str.split(",") if len(topic) > 0]
-        kafka_group_id = os.getenv('KAFKA_GROUP_ID', KAFKA_GROUP_ID)
         print(kafka_topics)
+        logger_logs.info('Subscribed Kafka Topics: {}'.format(kafka_topics))
 
-        # Init logstash logging
+        # Init logstash logging for data
         logging.basicConfig(level='WARNING')
-        logger = logging.getLogger(kafka_group_id + '.' + kafka_topics_str)
+        loggername = KAFKA_GROUP_ID + '.' + kafka_topics_str
+        logger = logging.getLogger(loggername)
         logger.setLevel(logging.INFO)
 
         # get bootstrap_servers from environment variable or use defaults and configure Consumer
         bootstrap_servers = os.getenv('BOOTSTRAP_SERVERS', BOOTSTRAP_SERVERS_default)
-        conf = {'bootstrap.servers': bootstrap_servers, 'group.id': kafka_group_id,
+        conf = {'bootstrap.servers': bootstrap_servers, 'group.id': KAFKA_GROUP_ID,
                 'session.timeout.ms': 6000,
                 'default.topic.config': {'auto.offset.reset': 'smallest'}}
+        logger_logs.info('Subscribed Kafka Config: {}'.format(conf))
+
+        # def on_assign(c, ps):
+        #     for p in ps:
+        #         p.offset = 0
+        #     c.assign(ps)
 
         # Create Consumer if allowed:
         if self.enable_kafka_adapter:
             consumer = Consumer(**conf)
-            consumer.subscribe(kafka_topics)
+            consumer.subscribe(kafka_topics)  # , on_assign=on_assign)
         else:
             consumer = None
 
@@ -128,6 +147,7 @@ class KafkaStAdapter:
                                               port=PORT_default,
                                               version=1)
         logger.addHandler(logstash_handler)
+        logger_logs.info('Added Logstash Logger for Data with loggername: {}'.format(loggername))
 
         # Check if Sensorthings server is reachable
         if self.enable_sensorthings:
@@ -147,7 +167,8 @@ class KafkaStAdapter:
             },
             "logstash output": {
                 "host": HOST_default,
-                "port": PORT_default
+                "port": PORT_default,
+                "logger name for data": loggername
             },
             "sensorthings mapping": {
                 "enabled sensorthings": self.enable_sensorthings,
@@ -162,6 +183,7 @@ class KafkaStAdapter:
         }
         with open(STATUS_FILE, "w") as f:
             f.write(json.dumps(adapter_status))
+            logger_logs.info('Status of Adapter: {}'.format(adapter_status))
 
         # time for logstash init
         logstash_reachable = False
@@ -177,13 +199,12 @@ class KafkaStAdapter:
             finally:
                 time.sleep(0.25)
 
-
         # ready to stream flag
         adapter_status["status"] = "running"
         with open(STATUS_FILE, "w") as f:
             f.write(json.dumps(adapter_status))
         print("Adapter Status:", str(adapter_status))
-        logger.info('Logstash reachable')
+        logger_logs.info('Logstash reachable')
 
         # Kafka 2 Logstash streaming
         if self.enable_kafka_adapter:
@@ -204,11 +225,12 @@ class KafkaStAdapter:
                             data['Datastream']['name'] = self.id_mapping['value'][data_id]['name']
                             data['Datastream']['URI'] = ST_SERVER + "Datastreams(" + data_id + ")"
 
+                        print(data["Datastream"])
                         logger.info('', extra=data)
 
                     elif msg.error().code() != KafkaError._PARTITION_EOF:
                         print(msg.error())
-                        logger.warning('Exception in Kafka-Logstash Streaming', extra=str(msg))
+                        logger_logs.error('Exception in Kafka-Logstash Streaming: {}'.format(msg))
 
                     t = time.time()
                     if t - ts_refreshed_mapping > REFRESH_MAPPING_EVERY:
@@ -217,10 +239,10 @@ class KafkaStAdapter:
                     time.sleep(0)
 
             except Exception as error:
-                logger.error("Error in Kafka-Logstash Streaming: {}".format(error))
+                logger_logs.error("Error in Kafka-Logstash Streaming: {}".format(error))
                 adapter_status["status"] = "Last error occured at {}: Error msg: {}"\
                     .format(time.ctime(), str(error))
-                logger.warning(adapter_status)
+                logger_logs.warning('Status of Adapter: {}'.format(adapter_status))
                 with open(STATUS_FILE, "w") as f:
                     f.write(json.dumps(adapter_status))
 

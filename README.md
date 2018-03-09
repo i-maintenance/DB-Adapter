@@ -1,6 +1,6 @@
 # Kafka to Logstash Adapter with status webserver integrated in the Data Analytics Stack
 
-This component subscribes topics from Apache Kafka message brokers and forwards them to the Logstash instance of a running ELK Stack. Optionally, the adapter maps IDs with the SensorThings Server in order to provide a plain and intuitive data channel management.
+This component subscribes to topics from the Apache Kafka message broker and forwards them to the Logstash instance of a running ELK Stack. Optionally, the adapter maps IDs with the SensorThings Server in order to provide a plain and intuitive data channel management.
 
 The Kafka Adapter based on the components:
 * Kafka Client [librdkafka](https://github.com/geeknam/docker-confluent-python) version **0.11.1**
