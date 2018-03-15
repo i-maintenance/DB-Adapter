@@ -82,6 +82,7 @@ Watch if everything worked fine with:
 ```bash
 sudo docker service ls
 sudo docker stack ps db-adapter
+sudo docker service logs db-adapter_kafka -f
 ```
 
 

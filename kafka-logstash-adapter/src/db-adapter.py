@@ -18,8 +18,8 @@ from confluent_kafka import Consumer, KafkaError
 # ID mapping is pretty much straightforward with a python script
 
 
-__date__ = "09 March 2018"
-__version__ = "1.9"
+__date__ = "15 March 2018"
+__version__ = "1.10"
 __email__ = "christoph.schranz@salzburgresearch.at"
 __status__ = "Development"
 __desc__ = """This program forwards consumed messages from the kafka bus semantically interpreted by sensorthings 
@@ -31,7 +31,7 @@ to the logstash instance of the ELK stack."""
 KAFKA_TOPICS = "SensorData"  # TODO can be set as env, Also works for the logstash pipeline index filter
 BOOTSTRAP_SERVERS_default = 'il061,il062,il063'
 # using this also als Host default "db-adapter"
-KAFKA_GROUP_ID = "iot86"  # il060, if any lakes occur, temporarily use another group-id until all data is load.
+KAFKA_GROUP_ID = "il060"  # "iot86" for local testing. In case of any data losses, temporarily use another group-id until all data is load.
 # KAFKA_GROUP_ID = os.uname()[1]  # use the hostname as kafka_group_ID
 
 # logstash parameters
@@ -226,7 +226,7 @@ class KafkaStAdapter:
                             data['Datastream']['name'] = self.id_mapping['value'][data_id]['name']
                             data['Datastream']['URI'] = ST_SERVER + "Datastreams(" + data_id + ")"
 
-                        print(data["Datastream"])
+                        # print(data["Datastream"])
                         logger.info('', extra=data)
 
                     elif msg.error().code() != KafkaError._PARTITION_EOF:
