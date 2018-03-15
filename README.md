@@ -4,7 +4,7 @@ This component subscribes to topics from the Apache Kafka message broker and for
 
 The Kafka Adapter based on the components:
 * Kafka Client [librdkafka](https://github.com/geeknam/docker-confluent-python) version **0.11.1**
-* python kafka module [confluent-kafka-python](https://github.com/confluentinc/confluent-kafka-python) version **0.9.1.2**
+* Python Kafka module [confluent-kafka-python](https://github.com/confluentinc/confluent-kafka-python) version **0.9.1.2**
 
 
 ## Contents
@@ -24,11 +24,16 @@ The Kafka Adapter based on the components:
 
 ## Usage
 
-Start the ELK stack using `docker-compose`:
+Make sure the `elastic stack` ist running on the same host if you start the DB-Adapter.
+Test the `elastic stack` in your browser [http://hostname:5601/status](http://hostname:5601/status).
+
+
+### Testing
+Using `docker-compose`:
 
 ```bash
-cd ../kafka-logstash-adapter
-docker-compose up --build -d
+cd /DB-Adapter
+sudo docker-compose up --build -d
 ```
 
 The flag `-d` stands for running it in background (detached mode):
@@ -37,8 +42,46 @@ The flag `-d` stands for running it in background (detached mode):
 Watch the logs with:
 
 ```bash
-cd ../kafka-logstash-adapter
-docker-compose logs -f
+sudo docker-compose logs -f
+```
+
+
+By default, the stack exposes the following ports:
+* 3030: Kafka-ELK HTTP
+
+
+### Deployment in a docker swarm
+Using `docker stack`:
+
+If not already done, add a regitry instance to register the image
+```bash
+cd /DB-Adapter
+sudo docker service create --name registry --publish published=5001,target=5000 registry:2
+curl 127.0.0.1:5001/v2/
+```
+This should output `{}`:
+
+
+If running with docker-compose works, push the image in order to make the customized image runnable in the stack
+
+```bash
+cd ../DB-Adapter
+sudo docker-compose build
+sudo docker-compose push
+```
+
+Actually deploy the service in the stack:
+```bash
+cd ../DB-Adapter
+sudo docker stack deploy --compose-file docker-compose.yml db-adapter
+```
+
+
+Watch if everything worked fine with:
+
+```bash
+sudo docker service ls
+sudo docker stack ps db-adapter
 ```
 
 
@@ -62,16 +105,16 @@ CONFLUENT_KAFKA_VERSION=0.9.1.2
 # seperate kafka entries with ","
 KAFKA_TOPICS=SensorData
 BOOTSTRAP_SERVERS=il061,il062,il063
-KAFKA_GROUP_ID=db-adapter
+
 enable_kafka_adapter=true
 enable_sensorthings=true
 
 ```
 
 
-## trouble-shooting
+## Trouble-shooting
 
-### Can't apt-get update in Dockerfile:
+#### Can't apt-get update in Dockerfile:
 Restart the service
 
 ```sudo service docker restart```
@@ -88,7 +131,7 @@ where `your_dns` can be found with the command:
 nmcli device show <interfacename> | grep IP4.DNS
 ```
 
-### Traceback of non zero code 4 or 128:
+####  Traceback of non zero code 4 or 128:
 
 Restart service with
 ```sudo service docker restart```
@@ -96,7 +139,7 @@ Restart service with
 or add your dns address as described above
 
 
-### Elasticsearch crashes instantly:
+####  Elasticsearch crashes instantly:
 
 Check permission of `elasticsearch/data`.
 
@@ -108,7 +151,7 @@ sudo chmod -R 777 .
 or remove redundant docker installations or reinstall it
 
 
-### Error starting userland proxy: listen tcp 0.0.0.0:3030: bind: address already in use
+#### Error starting userland proxy: listen tcp 0.0.0.0:3030: bind: address already in use
 
 Bring down other services, or change the hosts port number in docker-compose.yml. 
 
@@ -118,12 +161,12 @@ sudo docker ps
 ```
 
 
-### errors while removing docker containers:
+#### errors while removing docker containers:
 
 Remove redundant docker installations
 
 
-### "entire heap max virtual memory areas vm.max_map_count [...] likely too low, increase to at least [262144]"
+#### "entire heap max virtual memory areas vm.max_map_count [...] likely too low, increase to at least [262144]"
     
 Run on host machine:
 
@@ -131,14 +174,14 @@ Run on host machine:
 sudo sysctl -w vm.max_map_count=262144
 ```
 
-### Redis warning: vm.overcommit_memory
+#### Redis warning: vm.overcommit_memory
 Run on host:
 ```
 sysctl vm.overcommit_memory=1
 
 ```
 
-### Redis warning: "WARNING you have Transparent Huge Pages (THP) support enabled in your kernel."
+#### Redis warning: "WARNING you have Transparent Huge Pages (THP) support enabled in your kernel."
 
 Just ignore this
 

@@ -101,7 +101,7 @@ class KafkaStAdapter:
         """
         # Init logstash logging
         logging.basicConfig(level='WARNING')
-        loggername_logs = 'logging'
+        loggername_logs = KAFKA_GROUP_ID + '.logging'
         logger_logs = logging.getLogger(loggername_logs)
         logger_logs.setLevel(logging.INFO)
         #  use default and init Logstash Handler
@@ -112,6 +112,7 @@ class KafkaStAdapter:
         logger_logs.info('Added Logstash Logger for Logs with loggername: {}'.format(loggername_logs))
 
         # Init kafka consumer
+        logging.basicConfig(level='WARNING')
         kafka_topics_str = os.getenv('KAFKA_TOPICS', KAFKA_TOPICS)
         kafka_topics = [topic.strip() for topic in kafka_topics_str.split(",") if len(topic) > 0]
         print(kafka_topics)
