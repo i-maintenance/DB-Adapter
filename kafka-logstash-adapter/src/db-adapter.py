@@ -102,7 +102,7 @@ class KafkaStAdapter:
         """
         # Init logstash logging
         logging.basicConfig(level='WARNING')
-        loggername_logs = KAFKA_GROUP_ID + '.logging'
+        loggername_logs = 'db-adapter.logging'
         logger_logs = logging.getLogger(loggername_logs)
         logger_logs.setLevel(logging.INFO)
         #  use default and init Logstash Handler
