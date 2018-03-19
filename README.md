@@ -107,10 +107,21 @@ CONFLUENT_KAFKA_VERSION=0.9.1.2
 KAFKA_TOPICS=SensorData
 BOOTSTRAP_SERVERS=il061,il062,il063
 
+KAFKA_GROUP_ID = "il060"
+
+
 enable_kafka_adapter=true
 enable_sensorthings=true
 
 ```
+
+The most important parameter here is **KAFKA_GROUP_ID**. It should be the
+hostname of the instance, in order not to miss any data.
+The KAFKA_GROUP_ID will be noticed by the kafka broker which stores the
+offset for consumed data.
+If any data is not consumed at streaming, kafka stores the messages up
+to 2 weeks. You can consume this data by temporarily changing the KAFKA_GROUP_ID
+to another value.
 
 
 ## Trouble-shooting

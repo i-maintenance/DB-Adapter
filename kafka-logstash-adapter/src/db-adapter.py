@@ -30,9 +30,10 @@ to the logstash instance of the ELK stack."""
 # topics and servers should be of the form: "topic1,topic2,..."
 KAFKA_TOPICS = "SensorData"  # TODO can be set as env, Also works for the logstash pipeline index filter
 BOOTSTRAP_SERVERS_default = 'il061,il062,il063'
-# using this also als Host default "db-adapter"
-KAFKA_GROUP_ID = "il060"  # "iot86" for local testing. In case of any data losses, temporarily use another group-id until all data is load.
-# KAFKA_GROUP_ID = os.uname()[1]  # use the hostname as kafka_group_ID
+
+# "iot86" for local testing. In case of any data losses, temporarily use another group-id until all data is load.
+KAFKA_GROUP_ID = "il060"  # use il060 if used in docker swarm
+KAFKA_GROUP_ID = os.getenv('KAFKA_GROUP_ID', KAFKA_GROUP_ID)
 
 # logstash parameters
 HOST_default = KAFKA_GROUP_ID  # 'il060'  # 'logstash'  # use the local endpoint: equals hostname
