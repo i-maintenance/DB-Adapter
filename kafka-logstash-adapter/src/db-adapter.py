@@ -32,11 +32,13 @@ KAFKA_TOPICS = "SensorData"  # TODO can be set as env, Also works for the logsta
 BOOTSTRAP_SERVERS_default = 'il061,il062,il063'
 
 # "iot86" for local testing. In case of any data losses, temporarily use another group-id until all data is load.
-KAFKA_GROUP_ID = "il060"  # use il060 if used in docker swarm
-KAFKA_GROUP_ID = os.getenv('KAFKA_GROUP_ID', KAFKA_GROUP_ID)
+KAFKA_GROUP_ID = "iot86"  # use il060 if used in docker swarm
+# If executed locally with python, the KAFKA_GROUP_ID won't be changed
+KAFKA_GROUP_ID = os.getenv('KAFKA_GROUP_ID', KAFKA_GROUP_ID)  # overwrite iot86 by envfile ID=il060
+# if deployed in docker, the adapter will automatically use the entry in the .env file.
 
 # logstash parameters
-HOST_default = KAFKA_GROUP_ID  # 'il060'  # 'logstash'  # use the local endpoint: equals hostname
+HOST_default = KAFKA_GROUP_ID  # 'il060'   # use the local endpoint: equals hostname
 PORT_default = 5000
 STATUS_FILE = "status.log"
 
