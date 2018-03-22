@@ -172,7 +172,8 @@ class KafkaStAdapter:
             "logstash output": {
                 "host": HOST_default,
                 "port": PORT_default,
-                "logger name for data": loggername
+                "logger name for data": loggername,
+                "logger name for logs": loggername_logs
             },
             "sensorthings mapping": {
                 "enabled sensorthings": self.enable_sensorthings,
