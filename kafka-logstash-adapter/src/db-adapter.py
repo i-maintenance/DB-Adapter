@@ -28,7 +28,7 @@ to the logstash instance of the ELK stack."""
 
 # kafka parameters
 # topics and servers should be of the form: "topic1,topic2,..."
-KAFKA_TOPICS = "SensorData,OperatorData"  # TODO can be set as env, Also works for the logstash pipeline index filter
+KAFKA_TOPICS = "SensorData,OperatorData,Malfunctions"  # TODO can be set as env, Also works for the logstash pipeline index filter
 BOOTSTRAP_SERVERS_default = 'il061,il062,il063'
 
 # "iot86" for local testing. In case of any data losses, temporarily use another group-id until all data is load.
@@ -124,13 +124,9 @@ class KafkaStAdapter:
 
         # Init logstash logging for data
         logging.basicConfig(level='WARNING')
-        loggername_metric = KAFKA_GROUP_ID + '.metric'
+        loggername_metric = KAFKA_GROUP_ID + '.SensorThings'
         logger_metric = logging.getLogger(loggername_metric)
         logger_metric.setLevel(logging.INFO)
-
-        loggername_logdata = KAFKA_GROUP_ID + '.logdata'
-        logger_logdata = logging.getLogger(loggername_logdata)
-        logger_logdata.setLevel(logging.INFO)
 
         # get bootstrap_servers from environment variable or use defaults and configure Consumer
         bootstrap_servers = os.getenv('BOOTSTRAP_SERVERS', BOOTSTRAP_SERVERS_default)
@@ -178,7 +174,6 @@ class KafkaStAdapter:
                 "host": HOST_default,
                 "port": PORT_default,
                 "logger name for metric data": loggername_metric,
-                "logger name for log data": loggername_logdata,
                 "logger name for logs": loggername_logs
             },
             "sensorthings mapping": {
@@ -233,17 +228,19 @@ class KafkaStAdapter:
                             logger_metric.warning("could not decode msg: {}".format(msg.value()))
                             continue
                         if self.enable_sensorthings:
-                            data_id = str(data['Datastream']['@iot.id'])
+                            try:
+                                data_id = str(data['Datastream']['@iot.id'])
+                            except KeyError:
+                                continue
                             if data_id not in list(self.id_mapping['value'].keys()):
                                 self.one_st_id_map(data_id)
                             data['Datastream']['name'] = self.id_mapping['value'][data_id]['name']
                             data['Datastream']['URI'] = ST_SERVER + "Datastreams(" + data_id + ")"
 
                         # print(data["Datastream"]["@iot.id"], data["phenomenonTime"])
-                        if type(data['result']) in ["int", "float"]:
-                            logger_metric.info('', extra=data)
-                        else:
-                            logger_logdata.info('', extra=data)
+                        msg = data.pop('message', None)
+                        msg = ['' if msg is None else msg][0]
+                        logger_metric.info(msg, extra=data)
 
                     elif msg.error().code() != KafkaError._PARTITION_EOF:
                         print(msg.error())
