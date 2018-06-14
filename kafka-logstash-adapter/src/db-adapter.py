@@ -123,9 +123,13 @@ class KafkaStAdapter:
 
         # Init logstash logging for data
         logging.basicConfig(level='WARNING')
-        loggername = KAFKA_GROUP_ID + '.' + kafka_topics_str
-        logger = logging.getLogger(loggername)
-        logger.setLevel(logging.INFO)
+        loggername_metric = KAFKA_GROUP_ID + '.metric'
+        logger_metric = logging.getLogger(loggername_metric)
+        logger_metric.setLevel(logging.INFO)
+
+        loggername_logdata = KAFKA_GROUP_ID + '.logdata'
+        logger_logdata = logging.getLogger(loggername_logdata)
+        logger_logdata.setLevel(logging.INFO)
 
         # get bootstrap_servers from environment variable or use defaults and configure Consumer
         bootstrap_servers = os.getenv('BOOTSTRAP_SERVERS', BOOTSTRAP_SERVERS_default)
@@ -150,8 +154,8 @@ class KafkaStAdapter:
         logstash_handler = TCPLogstashHandler(host=HOST_default,
                                               port=PORT_default,
                                               version=1)
-        logger.addHandler(logstash_handler)
-        logger_logs.info('Added Logstash Logger for Data with loggername: {}'.format(loggername))
+        logger_metric.addHandler(logstash_handler)
+        logger_logs.info('Added Logstash Logger for Data with loggername: {}'.format(loggername_metric))
 
         # Check if Sensorthings server is reachable
         if self.enable_sensorthings:
@@ -172,7 +176,8 @@ class KafkaStAdapter:
             "logstash output": {
                 "host": HOST_default,
                 "port": PORT_default,
-                "logger name for data": loggername,
+                "logger name for metric data": loggername_metric,
+                "logger name for log data": loggername_logdata,
                 "logger name for logs": loggername_logs
             },
             "sensorthings mapping": {
@@ -224,7 +229,7 @@ class KafkaStAdapter:
                         try:
                             data = json.loads(msg.value().decode('utf-8'))
                         except json.decoder.JSONDecodeError:
-                            logger.warning("could not decode msg: {}".format(msg.value()))
+                            logger_metric.warning("could not decode msg: {}".format(msg.value()))
                             continue
 
                         if self.enable_sensorthings:
@@ -235,7 +240,10 @@ class KafkaStAdapter:
                             data['Datastream']['URI'] = ST_SERVER + "Datastreams(" + data_id + ")"
 
                         # print(data["Datastream"]["@iot.id"], data["phenomenonTime"])
-                        logger.info('', extra=data)
+                        if type(data['result']) in ["int", "float"]:
+                            logger_metric.info('', extra=data)
+                        else:
+                            logger_logdata.info('', extra=data)
 
                     elif msg.error().code() != KafkaError._PARTITION_EOF:
                         print(msg.error())
