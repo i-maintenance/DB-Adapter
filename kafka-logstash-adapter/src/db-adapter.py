@@ -32,7 +32,7 @@ KAFKA_TOPICS = "SensorData,OperatorData,Malfunctions"  # TODO can be set as env,
 BOOTSTRAP_SERVERS_default = 'il061,il062,il063'
 
 # "iot86" for local testing. In case of any data losses, temporarily use another group-id until all data is load.
-KAFKA_GROUP_ID = "iot86"  # use il060 if used in docker swarm
+KAFKA_GROUP_ID = "localhost"  # use il060 if used in docker swarm
 # If executed locally with python, the KAFKA_GROUP_ID won't be changed
 KAFKA_GROUP_ID = os.getenv('KAFKA_GROUP_ID', KAFKA_GROUP_ID)  # overwrite iot86 by envfile ID=il060
 # if deployed in docker, the adapter will automatically use the entry in the .env file.
@@ -230,7 +230,7 @@ class KafkaStAdapter:
                             data['Datastream']['name'] = self.id_mapping['value'][data_id]['name']
                             data['Datastream']['URI'] = ST_SERVER + "Datastreams(" + data_id + ")"
 
-                        # print(data["Datastream"])
+                        # print(data["Datastream"]["@iot.id"], data["phenomenonTime"])
                         logger.info('', extra=data)
 
                     elif msg.error().code() != KafkaError._PARTITION_EOF:
@@ -241,7 +241,7 @@ class KafkaStAdapter:
                     if t - ts_refreshed_mapping > REFRESH_MAPPING_EVERY:
                         self.id_mapping = self.empty_id_mapping()
                         ts_refreshed_mapping = t
-                    time.sleep(0)
+                    time.sleep(0.0)
 
             except Exception as error:
                 logger_logs.error("Error in Kafka-Logstash Streaming: {}".format(error))
