@@ -18,8 +18,8 @@ from confluent_kafka import Consumer, KafkaError
 # ID mapping is pretty much straightforward with a python script
 
 
-__date__ = "15 March 2018"
-__version__ = "1.10"
+__date__ = "14 June 2018"
+__version__ = "1.11"
 __email__ = "christoph.schranz@salzburgresearch.at"
 __status__ = "Development"
 __desc__ = """This program forwards consumed messages from the kafka bus semantically interpreted by sensorthings 
@@ -227,7 +227,7 @@ class KafkaStAdapter:
                         except json.decoder.JSONDecodeError:
                             logger.warning("could not decode msg: {}".format(msg.value()))
                             continue
-
+                        print(data['Datastream']['@iot.id'])
                         if self.enable_sensorthings:
                             data_id = str(data['Datastream']['@iot.id'])
                             if data_id not in list(self.id_mapping['value'].keys()):
@@ -235,7 +235,7 @@ class KafkaStAdapter:
                             data['Datastream']['name'] = self.id_mapping['value'][data_id]['name']
                             data['Datastream']['URI'] = ST_SERVER + "Datastreams(" + data_id + ")"
 
-                        # print(data["Datastream"]["@iot.id"], data["phenomenonTime"])
+                        print(data["Datastream"]["@iot.id"], data["phenomenonTime"])
                         logger.info('', extra=data)
 
                     elif msg.error().code() != KafkaError._PARTITION_EOF:
