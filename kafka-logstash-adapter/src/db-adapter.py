@@ -28,7 +28,7 @@ to the logstash instance of the ELK stack."""
 
 # kafka parameters
 # topics and servers should be of the form: "topic1,topic2,..."
-KAFKA_TOPICS = "SensorData,OperatorData,Malfunctions"  # TODO can be set as env, Also works for the logstash pipeline index filter
+KAFKA_TOPICS = "SensorData,OperatorData"  # TODO can be set as env, Also works for the logstash pipeline index filter
 BOOTSTRAP_SERVERS_default = 'il061,il062,il063'
 
 # "iot86" for local testing. In case of any data losses, temporarily use another group-id until all data is load.
@@ -222,7 +222,11 @@ class KafkaStAdapter:
                     if msg is None:
                         continue
                     if not msg.error():
-                        data = json.loads(msg.value().decode('utf-8'))
+                        try:
+                            data = json.loads(msg.value().decode('utf-8'))
+                        except json.decoder.JSONDecodeError:
+                            logger.warning("could not decode msg: {}".format(msg.value()))
+                            continue
 
                         if self.enable_sensorthings:
                             data_id = str(data['Datastream']['@iot.id'])
