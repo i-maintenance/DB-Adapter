@@ -28,7 +28,7 @@ to the logstash instance of the ELK stack."""
 
 # kafka parameters
 # topics and servers should be of the form: "topic1,topic2,..."
-KAFKA_TOPICS = "SensorData"  # TODO can be set as env, Also works for the logstash pipeline index filter
+KAFKA_TOPICS = "SensorData,OperatorData,Malfunctions"  # TODO can be set as env, Also works for the logstash pipeline index filter
 BOOTSTRAP_SERVERS_default = 'il061,il062,il063'
 
 # "iot86" for local testing. In case of any data losses, temporarily use another group-id until all data is load.
@@ -118,7 +118,7 @@ class KafkaStAdapter:
         logging.basicConfig(level='WARNING')
         kafka_topics_str = os.getenv('KAFKA_TOPICS', KAFKA_TOPICS)
         kafka_topics = [topic.strip() for topic in kafka_topics_str.split(",") if len(topic) > 0]
-        print(kafka_topics)
+        # print(kafka_topics)
         logger_logs.info('Subscribed Kafka Topics: {}'.format(kafka_topics))
 
         # Init logstash logging for data
