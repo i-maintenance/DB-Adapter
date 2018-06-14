@@ -117,6 +117,7 @@ class KafkaStAdapter:
         # Init kafka consumer
         logging.basicConfig(level='WARNING')
         kafka_topics_str = os.getenv('KAFKA_TOPICS', KAFKA_TOPICS)
+        kafka_topics_str = KAFKA_TOPICS
         kafka_topics = [topic.strip() for topic in kafka_topics_str.split(",") if len(topic) > 0]
         # print(kafka_topics)
         logger_logs.info('Subscribed Kafka Topics: {}'.format(kafka_topics))
@@ -245,8 +246,8 @@ class KafkaStAdapter:
 
             except Exception as error:
                 logger_logs.error("Error in Kafka-Logstash Streaming: {}".format(error))
-                adapter_status["status"] = "Last error occured at {}: Error msg: {}"\
-                    .format(time.ctime(), str(error))
+                adapter_status["status"] = "Last error occured at {}: Error msg: {}, Data: {}"\
+                    .format(time.ctime(), str(error), data)
                 logger_logs.warning('Status of Adapter: {}'.format(adapter_status))
                 with open(STATUS_FILE, "w") as f:
                     f.write(json.dumps(adapter_status))
