@@ -216,8 +216,8 @@ class KafkaStAdapter:
         if self.enable_kafka_adapter:
             running = True
             ts_refreshed_mapping = time.time()
-            try:
-                while running:
+            while running:
+                try:
                     msg = consumer.poll(0.1)
                     if msg is None:
                         continue
@@ -252,13 +252,13 @@ class KafkaStAdapter:
                         ts_refreshed_mapping = t
                     time.sleep(0.0)
 
-            except Exception as error:
-                logger_logs.error("Error in Kafka-Logstash Streaming: {}".format(error))
-                adapter_status["status"] = "Last error occured at {}: Error msg: {}, Data: {}"\
-                    .format(time.ctime(), str(error), data)
-                logger_logs.warning('Status of Adapter: {}'.format(adapter_status))
-                with open(STATUS_FILE, "w") as f:
-                    f.write(json.dumps(adapter_status))
+                except Exception as error:
+                    logger_logs.error("Error in Kafka-Logstash Streaming: {}".format(error))
+                    adapter_status["status"] = "Last error occured at {}: Error msg: {}, Data: {}"\
+                        .format(time.ctime(), str(error), data)
+                    logger_logs.warning('Status of Adapter: {}'.format(adapter_status))
+                    with open(STATUS_FILE, "w") as f:
+                        f.write(json.dumps(adapter_status))
 
 
 if __name__ == '__main__':
