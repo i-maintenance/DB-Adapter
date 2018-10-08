@@ -2,4 +2,3 @@ python-logstash
 flask
 redis
 requests
-
