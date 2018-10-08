@@ -3,7 +3,11 @@ version: '3.3'
 services:
   kafka:
     image: 127.0.0.1:5001/db-adapter
-    build: kafka-logstash-adapter/
+    build:
+      context: kafka-logstash-adapter/
+      args:
+      - LIBRDKAFKA_VERSION=$LIBRDKAFKA_VERSION
+      - CONFLUENT_KAFKA_VERSION=$CONFLUENT_KAFKA_VERSION
     env_file:
       - .env
     ports:

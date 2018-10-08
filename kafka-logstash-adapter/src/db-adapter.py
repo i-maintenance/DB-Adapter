@@ -18,8 +18,8 @@ from confluent_kafka import Consumer, KafkaError
 # ID mapping is pretty much straightforward with a python script
 
 
-__date__ = "14 June 2018"
-__version__ = "1.11"
+__date__ = "08 October 2018"
+__version__ = "1.12"
 __email__ = "christoph.schranz@salzburgresearch.at"
 __status__ = "Development"
 __desc__ = """This program forwards consumed messages from the kafka bus semantically interpreted by sensorthings 
@@ -28,23 +28,24 @@ to the logstash instance of the ELK stack."""
 
 # kafka parameters
 # topics and servers should be of the form: "topic1,topic2,..."
-KAFKA_TOPICS = "SensorData,OperatorData,Malfunctions"  # TODO can be set as env, Also works for the logstash pipeline index filter
-BOOTSTRAP_SERVERS_default = 'il061,il062,il063'
+KAFKA_TOPICS = "SensorData,Malfunctions"
+BOOTSTRAP_SERVERS_default = os.getenv('BOOTSTRAP_SERVERS_default',
+                                      '192.168.48.61,192.168.48.62,192.168.48.63')
 
 # "iot86" for local testing. In case of any data losses, temporarily use another group-id until all data is load.
-KAFKA_GROUP_ID = "il060"  # use il060 if used in docker swarm
 # If executed locally with python, the KAFKA_GROUP_ID won't be changed
-KAFKA_GROUP_ID = os.getenv('KAFKA_GROUP_ID', KAFKA_GROUP_ID)  # overwrite iot86 by envfile ID=il060
+KAFKA_GROUP_ID = os.getenv('KAFKA_GROUP_ID', "localhost")  # overwrite iot86 by envfile ID=il060
 # if deployed in docker, the adapter will automatically use the entry in the .env file.
 
 # logstash parameters
-HOST_default = KAFKA_GROUP_ID  # 'il060'   # use the local endpoint: equals hostname
-PORT_default = 5000
-STATUS_FILE = "status.log"
+LOGSTASH_HOST = os.getenv('LOGSTASH_HOST', '192.168.48.60')  # 'il060'   # use the local endpoint: equals hostname
+LOGSTASH_PORT = int(os.getenv('LOGSTASH_PORT', '5000'))
 
 # Sensorthings parameters
-ST_SERVER = "http://il060:8082/v1.0/"
+ST_SERVER = os.getenv('ST_SERVER', "http://il060:8082/v1.0/")
 REFRESH_MAPPING_EVERY = 5 * 60  # in seconds
+
+STATUS_FILE = "status.log"
 
 # webservice setup
 app = Flask(__name__)
@@ -108,8 +109,8 @@ class KafkaStAdapter:
         logger_logs = logging.getLogger(loggername_logs)
         logger_logs.setLevel(logging.INFO)
         #  use default and init Logstash Handler
-        logstash_handler = TCPLogstashHandler(host=HOST_default,
-                                              port=PORT_default,
+        logstash_handler = TCPLogstashHandler(host=LOGSTASH_HOST,
+                                              port=LOGSTASH_PORT,
                                               version=1)
         logger_logs.addHandler(logstash_handler)
         logger_logs.info('Added Logstash Logger for Logs with loggername: {}'.format(loggername_logs))
@@ -148,8 +149,8 @@ class KafkaStAdapter:
             consumer = None
 
         #  use default and init Logstash Handler
-        logstash_handler = TCPLogstashHandler(host=HOST_default,
-                                              port=PORT_default,
+        logstash_handler = TCPLogstashHandler(host=LOGSTASH_HOST,
+                                              port=LOGSTASH_PORT,
                                               version=1)
         logger_metric.addHandler(logstash_handler)
         logger_logs.info('Added Logstash Logger for Data with loggername: {}'.format(loggername_metric))
@@ -171,8 +172,8 @@ class KafkaStAdapter:
                 "enabled kafka adapter": self.enable_kafka_adapter
             },
             "logstash output": {
-                "host": HOST_default,
-                "port": PORT_default,
+                "host": LOGSTASH_HOST,
+                "port": LOGSTASH_PORT,
                 "logger name for metric data": loggername_metric,
                 "logger name for logs": loggername_logs
             },
@@ -196,7 +197,7 @@ class KafkaStAdapter:
         while not logstash_reachable:
             try:
                 # use localhost if running local
-                r = requests.get("http://" + HOST_default + ":9600")
+                r = requests.get("http://" + LOGSTASH_HOST + ":9600")
                 status_code = r.status_code
                 if status_code in [200]:
                     logstash_reachable = True

@@ -5,7 +5,7 @@ FROM python:3.5.4
 RUN apt-get update 
 
 # install librdkafka client
-ENV LIBRDKAFKA_VERSION 0.11.1
+ARG LIBRDKAFKA_VERSION
 RUN apt-get update && \
     git clone https://github.com/edenhill/librdkafka && cd librdkafka && \
     git checkout v${LIBRDKAFKA_VERSION} && \
@@ -13,7 +13,7 @@ RUN apt-get update && \
 
 
 # install confluent-kafka-client
-ENV CONFLUENT_KAFKA_VERSION 0.9.1.2
+ARG CONFLUENT_KAFKA_VERSION
 RUN pip install confluent-kafka==${CONFLUENT_KAFKA_VERSION}
 
 RUN mkdir /home/src
