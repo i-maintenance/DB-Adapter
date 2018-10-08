@@ -30,7 +30,6 @@ services:
       restart_policy:
         condition: on-failure
 
-
   redis:
     image: redis:alpine
     networks:
