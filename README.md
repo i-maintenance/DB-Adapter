@@ -12,7 +12,7 @@ The Kafka Adapter based on the components:
 1. [Requirements](#requirements)
 2. [Usage](#usage)
 3. [Configuration](#configuration)
-4. [Trouble-Shooting](#Trouble-shooting)
+4. [Trouble-Shooting](#trouble-shooting)
 
 
 ## Requirements
@@ -93,7 +93,7 @@ By default, the stack exposes the following ports:
 
 ## Configuration
 
-The Kafka-Adapter fetches automatically data from the kafka message bus on topic **SensorData**. However, the selected topics can be specified in `kafka-logstash-adapter/.env` by setting the environment
+The Kafka-Adapter fetches automatically data from the kafka message bus on topic **SensorData**. However, the selected topics can be specified in `src/.env` by setting the environment
 variables. Entries of `KAFKA_TOPICS` and `BOOTSTRAP_SERVERS` should be of the form `topic1,topic2,topic3,...`
 
 

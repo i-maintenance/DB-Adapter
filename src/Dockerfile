@@ -18,10 +18,10 @@ RUN pip install confluent-kafka==${CONFLUENT_KAFKA_VERSION}
 
 RUN mkdir /home/src
 WORKDIR /home/src
-ADD src/requirements.txt /home/src
+ADD requirements.txt /home/src
 RUN pip install -r /home/src/requirements.txt
 
-ADD src/db-adapter.py /home/src
+ADD db-adapter.py /home/src
 
 CMD ["python", "/home/src/db-adapter.py"]
 

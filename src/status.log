@@ -1,0 +1,1 @@
+{"application": "test-feeder_db-adapter", "status": "waiting for Logstash", "kafka input": "None", "logstash output": {"host": "logstash", "port": 5000}, "sensorthings mapping": {"enabled sensorthings": "No"}, "version": {"number": "test"}}
