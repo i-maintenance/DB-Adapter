@@ -38,7 +38,7 @@ KAFKA_GROUP_ID = os.getenv('KAFKA_GROUP_ID', "localhost")  # overwrite iot86 by 
 # if deployed in docker, the adapter will automatically use the entry in the .env file.
 
 # logstash parameters
-LOGSTASH_HOST = os.getenv('LOGSTASH_HOST', '192.168.48.60')  # 'il060'   # use the local endpoint: equals hostname
+LOGSTASH_HOST = os.getenv('LOGSTASH_HOST', '192.168.48.71')  # 'il060' was before   # use the local endpoint: equals hostname
 LOGSTASH_PORT = int(os.getenv('LOGSTASH_PORT', '5000'))
 
 # Sensorthings parameters
